@@ -396,7 +396,7 @@ def generateOBJ(d,namecls,types):
 		name  = a[0]
 		value = a[1]
 		if isinstance(value,list):
-			o = generateOBJ(value,name)
+			o = generateOBJ(value, name, types)
 			lst.append(o)
 			dct[name] = lst
 		else:
