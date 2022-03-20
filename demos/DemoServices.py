@@ -14,6 +14,9 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from __future__ import division
+from __future__ import unicode_literals
+from past.utils import old_div
 import tornado.httpserver
 import tornado.ioloop
 from tornadows import soaphandler
@@ -45,7 +48,7 @@ class DivService(soaphandler.SoapHandler):
 	""" Service that provides the division operation of two float numbers """
 	@webservice(_params=[xmltypes.Float,xmltypes.Float],_returns=xmltypes.Float)
 	def div(self, a, b):
-		result = a/b
+		result = old_div(a,b)
 		return result
 
 class FibonacciService(soaphandler.SoapHandler):

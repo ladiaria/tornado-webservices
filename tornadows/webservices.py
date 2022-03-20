@@ -15,7 +15,9 @@
 # under the License.
 
 """ Implementation of webservices API 0.9 """
+from __future__ import unicode_literals
 
+from builtins import str
 import tornado.httpserver
 import tornado.ioloop
 import tornado.web

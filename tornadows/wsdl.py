@@ -14,12 +14,14 @@
 # License for the specific language governing permissions and limitations
 
 """ Class Wsdl to generate WSDL Document """
+from __future__ import unicode_literals
+from builtins import object
 import xml.dom.minidom
 import inspect
 from tornadows import xmltypes
 from tornadows import complextypes
 
-class Wsdl:
+class Wsdl(object):
 	""" ToDO:
 		- Incorporate exceptions for parameters inputs.
 		- When elementInput and/or elementOutput are empty trigger a exception.
@@ -38,10 +40,10 @@ class Wsdl:
 	def createWsdl(self):
 		typeInput  = None
 		typeOutput = None
-		types  = b'<wsdl:types>\n'
-		types += b'<xsd:schema targetNamespace="%s">\n'%self._namespace
+		types  = '<wsdl:types>\n'
+		types += '<xsd:schema targetNamespace="%s">\n'%self._namespace
 
-		if inspect.isclass(self._elementInput) and issubclass(self._elementInput,complextypes.ComplexType): 
+		if inspect.isclass(self._elementInput) and issubclass(self._elementInput,complextypes.ComplexType):
 			typeInput = self._elementInput.getName()
 			types += self._elementInput.toXSD()
 		elif isinstance(self._elementInput,dict):
@@ -54,7 +56,7 @@ class Wsdl:
 			typeInput  = self._elementNameInput
 			types += self._createTypes(typeInput,self._elementInput)
 
-		if inspect.isclass(self._elementOutput) and issubclass(self._elementOutput,complextypes.ComplexType): 
+		if inspect.isclass(self._elementOutput) and issubclass(self._elementOutput,complextypes.ComplexType):
 			typeOutput = self._elementOutput.getName()
 			types += self._elementOutput.toXSD()
 		elif isinstance(self._elementOutput,xmltypes.Array):
@@ -64,47 +66,47 @@ class Wsdl:
 			typeOutput = self._elementNameOutput
 			types += self._createTypes(typeOutput,self._elementOutput)
 
-		types += b'</xsd:schema>\n'
-		types += b'</wsdl:types>\n'
-		messages  = b'<wsdl:message name="%sRequest">\n'%self._nameservice
-		messages += b'<wsdl:part name="parameters" element="tns:%s"/>\n'%typeInput
-		messages += b'</wsdl:message>\n'
-		messages += b'<wsdl:message name="%sResponse">\n'%self._nameservice
-		messages += b'<wsdl:part name="parameters" element="tns:%s"/>\n'%typeOutput
-		messages += b'</wsdl:message>\n'
-		portType  = b'<wsdl:portType name="%sPortType">\n'%self._nameservice
-		portType += b'<wsdl:operation name="%s">\n'%self._operation
-		portType += b'<wsdl:input message="tns:%sRequest"/>\n'%self._nameservice
-		portType += b'<wsdl:output message="tns:%sResponse"/>\n'%self._nameservice
-		portType += b'</wsdl:operation>\n'
-		portType += b'</wsdl:portType>\n'
-		binding  = b'<wsdl:binding name="%sBinding" type="tns:%sPortType">\n'%(self._nameservice,self._nameservice)
-		binding += b'<soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>\n'
-		binding += b'<wsdl:operation name="%s">\n'%self._operation
-		binding += b'<soap:operation soapAction="%s" style="document"/>\n'%self._location
-		binding += b'<wsdl:input><soap:body use="literal"/></wsdl:input>\n'
-		binding += b'<wsdl:output><soap:body use="literal"/></wsdl:output>\n'
-		binding += b'</wsdl:operation>\n'
-		binding += b'</wsdl:binding>\n'
-		service  = b'<wsdl:service name="%s">\n'%self._nameservice
-		service += b'<wsdl:port name="%sPort" binding="tns:%sBinding">\n'%(self._nameservice,self._nameservice)
-		service += b'<soap:address location="%s"/>\n'%self._location
-		service += b'</wsdl:port>\n'
-		service += b'</wsdl:service>\n'
+		types += '</xsd:schema>\n'
+		types += '</wsdl:types>\n'
+		messages  = '<wsdl:message name="%sRequest">\n'%self._nameservice
+		messages += '<wsdl:part name="parameters" element="tns:%s"/>\n'%typeInput
+		messages += '</wsdl:message>\n'
+		messages += '<wsdl:message name="%sResponse">\n'%self._nameservice
+		messages += '<wsdl:part name="parameters" element="tns:%s"/>\n'%typeOutput
+		messages += '</wsdl:message>\n'
+		portType  = '<wsdl:portType name="%sPortType">\n'%self._nameservice
+		portType += '<wsdl:operation name="%s">\n'%self._operation
+		portType += '<wsdl:input message="tns:%sRequest"/>\n'%self._nameservice
+		portType += '<wsdl:output message="tns:%sResponse"/>\n'%self._nameservice
+		portType += '</wsdl:operation>\n'
+		portType += '</wsdl:portType>\n'
+		binding  = '<wsdl:binding name="%sBinding" type="tns:%sPortType">\n'%(self._nameservice,self._nameservice)
+		binding += '<soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>\n'
+		binding += '<wsdl:operation name="%s">\n'%self._operation
+		binding += '<soap:operation soapAction="%s" style="document"/>\n'%self._location
+		binding += '<wsdl:input><soap:body use="literal"/></wsdl:input>\n'
+		binding += '<wsdl:output><soap:body use="literal"/></wsdl:output>\n'
+		binding += '</wsdl:operation>\n'
+		binding += '</wsdl:binding>\n'
+		service  = '<wsdl:service name="%s">\n'%self._nameservice
+		service += '<wsdl:port name="%sPort" binding="tns:%sBinding">\n'%(self._nameservice,self._nameservice)
+		service += '<soap:address location="%s"/>\n'%self._location
+		service += '</wsdl:port>\n'
+		service += '</wsdl:service>\n'
 
-		definitions  = b'<wsdl:definitions name="%s"\n'%self._nameservice
-		definitions  += b'xmlns:xsd="http://www.w3.org/2001/XMLSchema"\n'
-		definitions  += b'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"\n'
-		definitions  += b'xmlns:tns="%s"\n'%self._namespace
-		definitions  += b'xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"\n'
-		definitions  += b'xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"\n'
-		definitions  += b'targetNamespace="%s">\n'%self._namespace
+		definitions  = '<wsdl:definitions name="%s"\n'%self._nameservice
+		definitions  += 'xmlns:xsd="http://www.w3.org/2001/XMLSchema"\n'
+		definitions  += 'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"\n'
+		definitions  += 'xmlns:tns="%s"\n'%self._namespace
+		definitions  += 'xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"\n'
+		definitions  += 'xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"\n'
+		definitions  += 'targetNamespace="%s">\n'%self._namespace
 		definitions += types
 		definitions += messages
 		definitions += portType
 		definitions += binding
 		definitions += service
-		definitions += b'</wsdl:definitions>\n'
+		definitions += '</wsdl:definitions>\n'
 		wsdlXml = xml.dom.minidom.parseString(definitions)
 
 		return wsdlXml

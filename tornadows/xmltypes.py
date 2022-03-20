@@ -17,7 +17,10 @@
 	Are incorporated the primitive datatypes defined by XML.
 	Array is defined for the use of array of elements and his respective datatype.
 """
+from __future__ import unicode_literals
 
+from builtins import str
+from builtins import object
 def createElementXML(name,type,prefix='xsd'):
 	""" Function used for the creation of xml elements. """
 	return b'<%s:element name="%s" type="%s:%s"/>'%(prefix,name,prefix,type)
@@ -35,7 +38,7 @@ def createArrayXML(name,type,prefix='xsd',maxoccurs=None):
 	complexType += b'<%s:element name="%s" type="tns:%sParams"/>\n'%(prefix,name,name)
 	return complexType
 
-class Array:
+class Array(object):
 	""" Create arrays of xml elements.
 	    
 	    Here an example:
@@ -73,7 +76,7 @@ class Array:
 	def genType(self,v):
 		return self._type.genType(v)
 
-class PrimitiveType:
+class PrimitiveType(object):
 	""" Class father for all derived types. """
 	pass
 

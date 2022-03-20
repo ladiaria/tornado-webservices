@@ -1,1 +1,4 @@
 .*.swp
+*.egg-info
+*.py.bak
+/build

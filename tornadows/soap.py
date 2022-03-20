@@ -15,10 +15,12 @@
 # under the License.
 
 """ Implementation of a envelope soap 1.1 """
+from __future__ import unicode_literals
 
+from builtins import object
 import xml.dom.minidom
 
-class SoapMessage:
+class SoapMessage(object):
 	""" Implementation of a envelope soap 1.1 with minidom API
 
 		import tornadows.soap

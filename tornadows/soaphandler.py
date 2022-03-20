@@ -15,11 +15,12 @@
 # under the License.
 
 """ Implementation of soaphandler for webservices API 0.9 """
+from __future__ import unicode_literals
 
+from builtins import str
 import tornado.httpserver
 import tornado.web
 import xml.dom.minidom
-import string
 import inspect
 from tornadows import soap
 from tornadows import xmltypes
@@ -66,12 +67,12 @@ def webservice(*params,**kwparams):
 		def operation(*args,**kwargs):
 			return f(*args,**kwargs)
 
-		operation.func_name = f.func_name
+		operation.__name__ = f.__name__
 		operation._is_operation = True
 		operation._args = _args
 		operation._input = _input
 		operation._output = _output
-		operation._operation = f.func_name
+		operation._operation = f.__name__
 		operation._inputArray = _inputArray
 		operation._outputArray = _outputArray
 		return operation
@@ -79,19 +80,19 @@ def webservice(*params,**kwparams):
 
 def soapfault(faultstring):
 	""" Method for generate a soap fault
-	    soapfault() return a SoapMessage() object with a message 
+	    soapfault() return a SoapMessage() object with a message
 	    for Soap Envelope
 	 """
 	fault = soap.SoapMessage()
-	faultmsg  = b'<soapenv:Fault xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope">\n'
-	faultmsg += b'<faultcode></faultcode>\n'
-	faultmsg += b'<faultstring>%s</faultstring>\n'%faultstring
-	faultmsg += b'</soapenv:Fault>\n'
+	faultmsg  = '<soapenv:Fault xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope">\n'
+	faultmsg += '<faultcode></faultcode>\n'
+	faultmsg += '<faultstring>%s</faultstring>\n'%faultstring
+	faultmsg += '</soapenv:Fault>\n'
 	fault.setBody(xml.dom.minidom.parseString(faultmsg))
 	return fault
 
 class SoapHandler(tornado.web.RequestHandler):
-	""" This subclass extends tornado.web.RequestHandler class, defining the 
+	""" This subclass extends tornado.web.RequestHandler class, defining the
 	    methods get() and post() for handle a soap message (request and response).
 	"""
 	def get(self):
@@ -121,7 +122,7 @@ class SoapHandler(tornado.web.RequestHandler):
 		wsdl_location = 'http://%s:%s/%s'%(address,port,wsdl_nameservice)
 		query = self.request.query
 		self.set_header('Content-Type','application/xml; charset=UTF-8')
-		if string.upper(query) == 'WSDL':
+		if query.upper() == 'WSDL':
 			if wsdl_path == None:
 				wsdlfile = wsdl.Wsdl(nameservice=wsdl_nameservice,
 						     targetNamespace=wsdl_targetns,
@@ -163,7 +164,7 @@ class SoapHandler(tornado.web.RequestHandler):
 					is_array = None
 					if hasattr(operation,'_outputArray') and getattr(operation,'_outputArray'):
 						is_array = getattr(operation,'_outputArray')
-				
+
 					typesoutput = getattr(operation,'_output')
 					if inspect.isclass(typesoutput) and issubclass(typesoutput,complextypes.ComplexType):
 						self._response = self._createReturnsComplexType(response)
@@ -194,7 +195,7 @@ class SoapHandler(tornado.web.RequestHandler):
 
 		header_elements = self._parseXML(header)
 		body_elements = self._parseXML(body)
-		
+
 		soapMsg = soap.SoapMessage()
 		for h in header_elements:
 			soapMsg.setHeader(h)
@@ -204,8 +205,8 @@ class SoapHandler(tornado.web.RequestHandler):
 		return soapMsg
 
 	def _parseXML(self,elements):
-		""" Private method parse and digest the xml.dom.minidom.Element 
-		    finding the childs of Header and Body from soap message. 
+		""" Private method parse and digest the xml.dom.minidom.Element
+		    finding the childs of Header and Body from soap message.
 		    Return a list object with all of child Elements.
 		"""
 		elem_list = []
@@ -231,7 +232,7 @@ class SoapHandler(tornado.web.RequestHandler):
 		obj = complextypes.xml2object(xmld.toxml(),xsd,complex)
 
 		return obj
-	
+
 	def _parseParams(self,elements,types=None,args=None):
 		""" Private method to parse a Body element of SOAP Envelope and extract
 		    the values of the request document like parameters for the soapmethod,
@@ -241,7 +242,7 @@ class SoapHandler(tornado.web.RequestHandler):
 		for tagname in args:
 			type = types[tagname]
 			values += self._findValues(tagname,type,elements)
-		return values		
+		return values
 
 	def _findValues(self,name,type,xml):
 		""" Private method to find the values of elements in the XML of input """
@@ -256,17 +257,17 @@ class SoapHandler(tornado.web.RequestHandler):
 		return values
 
 	def _createReturnsComplexType(self,result):
-		""" Private method to generate the xml document with the response. 
+		""" Private method to generate the xml document with the response.
 		    Return an SoapMessage() with XML document.
 		"""
 		response = xml.dom.minidom.parseString(result.toXML())
-		
+
 		soapResponse = soap.SoapMessage()
 		soapResponse.setBody(response)
 		return soapResponse
-			
+
 	def _createReturns(self,result,is_array):
-		""" Private method to generate the xml document with the response. 
+		""" Private method to generate the xml document with the response.
 		    Return an SoapMessage().
 		"""
 		xmlresponse = b''
@@ -282,9 +283,9 @@ class SoapHandler(tornado.web.RequestHandler):
 			xmlresponse += b'</returns>\n'
 		else:
 			xmlresponse = b'<returns>%s</returns>\n'%str(result)
-	
+
 		response = xml.dom.minidom.parseString(xmlresponse)
-		
+
 		soapResponse = soap.SoapMessage()
 		soapResponse.setBody(response)
 		return soapResponse

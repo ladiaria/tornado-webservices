@@ -14,8 +14,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-""" Implementation of module with classes and functions for transform python 
-    classes in xml schema: 
+""" Implementation of module with classes and functions for transform python
+    classes in xml schema:
 
     See the next example:
 
@@ -36,17 +36,20 @@
 	 <xsd:complexType name="Person">
 		<xsd:sequence>
 			<xsd:element name="name" type="xsd:string"/>
-			<xsd:element name="age" type="xsd:integer"/> 
+			<xsd:element name="age" type="xsd:integer"/>
 		</xsd:sequence>
 	 </xsd:complexType>
 
 """
+from __future__ import unicode_literals
 
+from builtins import str
+from builtins import object
 import tornadows.xmltypes
 import xml.dom.minidom
 import inspect
-	
-class Property:
+
+class Property(object):
 	""" Class base for definition of properties of the attributes of a python class """
 	pass
 
@@ -118,7 +121,7 @@ class ArrayProperty(list):
 		self._maxOccurs = maxOccurs
 		self._object = object
 		self.append(self._object)
-		
+
 	def toXSD(self,namespace='xsd',nameelement=None):
 		""" Create xml complex type for ArrayProperty """
 		xsd = self._object.toXSD()
@@ -136,11 +139,11 @@ class ComplexType(object):
 	    class Person(ComplexType):
 		name = StringProperty
 		age  = IntegerProperty
-	
+
 	    if __name__ == '__main__':
 		print 'XML Schema : '
 		print Person.toXSD()
-		
+
 		p = Person()
 		p.name.value = 'Steve J'
 		p.age.value  = 38
@@ -153,13 +156,13 @@ class ComplexType(object):
 	    from tornadows.complextypes import ComplexType
 
 	    class Person(ComplexType):
-		name = str 
+		name = str
 		age  = int
-	
+
 	    if __name__ == '__main__':
 		print 'XML Schema : '
 		print Person.toXSD()
-		
+
 		p = Person()
 		p.name.value = 'Steve J'
 		p.age.value  = 38
@@ -171,9 +174,9 @@ class ComplexType(object):
 	def __init__(self):
 		""" Class constructor for ComplexType """
 		default_attr = dir(type('default',(object,),{}))
-		for attr in self.__class__.__dict__.keys():
+		for attr in list(self.__class__.__dict__.keys()):
 			if default_attr.count(attr) > 0 or callable(attr):
-				continue	
+				continue
 			else:
 				element = self.__class__.__dict__[attr]
 				typeobj = self._createAttributeType(element)
@@ -212,7 +215,7 @@ class ComplexType(object):
 				xml += b'<%s>%s</%s>'%(key,element,key)
 		xml += b'</%s>'%nameroot
 		return xml
-					
+
 	@classmethod
 	def toXSD(cls,xmlns='http://www.w3.org/2001/XMLSchema',namespace='xsd'):
 		""" Class method that creates the XSD document for the python class.
@@ -220,19 +223,19 @@ class ComplexType(object):
 		 """
 		name = cls.__name__
 		xsd  = cls._generateXSD()
-		xsd += b'<%s:element name="%s" type="tns:%s"/>'%(namespace,name,name)
-		
+		xsd += '<%s:element name="%s" type="tns:%s"/>'%(namespace,name,name)
+
 		return xsd
-		
-	@classmethod	
+
+	@classmethod
 	def _generateXSD(cls,xmlns='http://www.w3.org/2001/XMLSchema',namespace='xsd'):
 		""" Class method for get the xml schema with the document definition.
 		    Return a string with the xsd document.
 		 """
 		default_attr = dir(type('default',(object,),{}))
 		name = cls.__name__
-		xsd  = b'<%s:complexType name="%s" xmlns:%s="%s">'%(namespace,name,namespace,xmlns)
-		xsd += b'<%s:sequence>'%namespace
+		xsd  = '<%s:complexType name="%s" xmlns:%s="%s">'%(namespace,name,namespace,xmlns)
+		xsd += '<%s:sequence>'%namespace
 		complextype = []
 		for key in dir(cls):
 			if default_attr.count(key) > 0:
@@ -242,46 +245,46 @@ class ComplexType(object):
 				continue
 			if isinstance(element,Property):
 				xsd += element.type.createElement(str(key))
-			elif isinstance(element,ComplexType): 
+			elif isinstance(element,ComplexType):
 				nameinstance = key
 				complextype.append(element._generateXSD())
 				xsd += b'<%s:element name="%s" type="tns:%s"/>'%(namespace,nameinstance,element.getName())
-			elif inspect.isclass(element) and issubclass(element,ComplexType): 
+			elif inspect.isclass(element) and issubclass(element,ComplexType):
 				nameinstance = key
 				complextype.append(element._generateXSD())
 				xsd += b'<%s:element name="%s" type="tns:%s"/>'%(namespace,nameinstance,element.getName())
 			elif isinstance(element,ArrayProperty):
 				if isinstance(element[0],ComplexType) or issubclass(element[0],ComplexType):
 					complextype.append(element[0]._generateXSD())
-					xsd += b'<%s:element name="%s" type="tns:%s" maxOccurs="unbounded"/>'%(namespace,key,element[0].__name__)	
+					xsd += b'<%s:element name="%s" type="tns:%s" maxOccurs="unbounded"/>'%(namespace,key,element[0].__name__)
 				else:
 					typeelement = createPythonType2XMLType(element[0].__name__)
-					xsd += b'<%s:element name="%s" type="%s:%s" maxOccurs="unbounded"/>'%(namespace,key,namespace,typeelement)	
+					xsd += b'<%s:element name="%s" type="%s:%s" maxOccurs="unbounded"/>'%(namespace,key,namespace,typeelement)
 			elif isinstance(element,list):
 				if isinstance(element[0],ComplexType) or issubclass(element[0],ComplexType):
 					complextype.append(element[0]._generateXSD())
-					xsd += b'<%s:element name="%s" type="tns:%s" maxOccurs="unbounded"/>'%(namespace,key,element[0].__name__)	
+					xsd += '<%s:element name="%s" type="tns:%s" maxOccurs="unbounded"/>'%(namespace,key,element[0].__name__)
 				else:
 					typeelement = createPythonType2XMLType(element[0].__name__)
-					xsd += b'<%s:element name="%s" type="%s:%s" maxOccurs="unbounded"/>'%(namespace,key,namespace,typeelement)	
+					xsd += b'<%s:element name="%s" type="%s:%s" maxOccurs="unbounded"/>'%(namespace,key,namespace,typeelement)
 			elif hasattr(element,'__name__'):
 				typeelement = createPythonType2XMLType(element.__name__)
-				xsd += b'<%s:element name="%s" type="%s:%s"/>'%(namespace,str(key),namespace,typeelement)
-		xsd += b'</%s:sequence>'%namespace
-		xsd += b'</%s:complexType>'%namespace
-		
+				xsd += '<%s:element name="%s" type="%s:%s"/>'%(namespace,str(key),namespace,typeelement)
+		xsd += '</%s:sequence>'%namespace
+		xsd += '</%s:complexType>'%namespace
+
 		if len(complextype) > 0:
 			for ct in complextype:
 				xsd += ct
-				
+
 		return xsd
-		
+
 	@classmethod
 	def getName(cls):
 		""" Class method return the name of the class """
 		return cls.__name__
-		
-	@classmethod	
+
+	@classmethod
 	def _createAttributeType(self,element):
 		""" Class method to create the types of the attributes of a ComplexType """
 		if isinstance(element,list):
@@ -309,7 +312,7 @@ class ComplexType(object):
 		elif issubclass(element,ComplexType):
 			return element()
 		else:
-			if   element.__name__ == 'int':	
+			if   element.__name__ == 'int':
 				return int
 			elif element.__name__ == 'decimal':
 				return float
@@ -406,7 +409,7 @@ def generateOBJ(d,namecls,types):
 			else:
 				dct[name] = value
 	return type(namecls,(ComplexType,),dct)
-	
+
 def createProperty(typ,value):
 	""" Function that creates a Property class instance, with the value """
 	ct = None
@@ -462,7 +465,7 @@ def findElementFromDict(dictionary,key):
 
 def convert(typeelement,value):
 	""" Function that converts a value depending his type """
-	if typeelement == 'xsd:integer':	
+	if typeelement == 'xsd:integer':
 		return int(value)
 	elif typeelement == 'xsd:decimal':
 		return float(value)
@@ -491,7 +494,7 @@ def createPythonType2XMLType(pyType):
 	elif pyType == 'decimal':
 		xmlType = 'decimal'
 	elif pyType == 'double':
-		xmlType = 'float'				
+		xmlType = 'float'
 	elif pyType == 'float':
 		xmlType = 'float'
 	elif pyType == 'duration':
@@ -506,6 +509,6 @@ def createPythonType2XMLType(pyType):
 		xmlType = 'string'
 	elif pyType == 'boolean':
 		xmlType = 'boolean'
-		
+
 	return xmlType
 
