@@ -1,4 +1,5 @@
 .*.swp
 *.egg-info
 *.py.bak
-/build
+build
+__pycache__
