@@ -42,17 +42,17 @@ def webservice(*params, **kwparams):
         if len(kwparams):
             _params = kwparams['_params']
             if inspect.isclass(_params) and issubclass(_params, complextypes.ComplexType):
-                _args = inspect.getargspec(f).args[1:]
+                _args = inspect.getfullargspec(f).args[1:]
                 _input = _params
             elif isinstance(_params, list):
-                _args = inspect.getargspec(f).args[1:]
+                _args = inspect.getfullargspec(f).args[1:]
                 _input = {}
                 i = 0
                 for arg in _args:
                     _input[arg] = _params[i]
                     i += 1
             else:
-                _args = inspect.getargspec(f).args[1:]
+                _args = inspect.getfullargspec(f).args[1:]
                 _input = {}
                 for arg in _args:
                     _input[arg] = _params
